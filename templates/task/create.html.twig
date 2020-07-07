@@ -1,0 +1,50 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}
+    {{ title }}
+{% endblock %}
+
+{% block subtitle %}
+    {{ subtitle }}
+{% endblock %}
+
+{% block content %}
+    <form action="{{ path('app_tasks_store') }}" method="POST" class="form-group">
+
+        <div class="row">
+            <div class="col">
+                <label for="name">Name</label>
+                <input autofocus class="form-control" type="text" name="name" required>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col">
+                <a class="btn btn-danger" href="{{ path('app_tasks_index') }}">back</a>
+                <button class="btn btn-success" type="submit">Add</button>
+            </div>
+        </div>
+
+        {% for message in app.flashes('success') %}
+            <div class="row">
+                <div class="col">
+                    <div class="alert alert-success">
+                        {{ message }}
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+
+        {% for message in app.flashes('error') %}
+            <div class="row">
+                <div class="col">
+                    <div class="alert alert-danger">
+                        {{ message }}
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+
+    </form>
+</div>
+{% endblock %}

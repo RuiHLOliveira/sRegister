@@ -1,0 +1,133 @@
+/* 
+@media (max-width: 575.98px)
+@media (min-width: 576px) and (max-width: 767.98px)
+@media (min-width: 768px) and (max-width: 991.98px)
+@media (min-width: 992px) and (max-width: 1199.98px)
+@media (min-width: 1200px)
+*/
+
+* {
+    --textColor: #ffffff; /* text color */
+    --defaultColor: #304156; /* default color */
+    --hoverColor: #263445;
+    --activeSubmenuColor: #1f2d3d; /* active and submenu color */
+}
+/* structural css */
+.wrapper {
+    display: flex;
+    align-items: stretch;
+}
+
+@media (max-width: 767.98px) {
+    #sidebar {
+        margin-left: -210px;
+    }
+    #sidebar.toggleActive {
+        margin-left: 0;
+    }
+    .menuButton{
+        float: right;
+        margin-top: 5px;
+    }
+}
+
+@media (min-width: 768px) {
+    #sidebar.toggleActive {
+        margin-left: -210px;
+    }
+    .menuButton{
+        margin-right: 10px;
+        margin-top: -3px;
+        float: left;
+    }
+}
+
+#sidebar {
+    min-width: 210px;
+    max-width: 210px;
+    min-height: 100vh;
+}
+
+/* styling css */
+
+/* navbar color and transition */
+#sidebar {
+    background: var(--defaultColor);
+    color: var(--textColor);
+    transition: all 0.3s;
+}
+
+/* sidebar header */
+#sidebar .sidebar-header {
+    text-align: center;
+    padding: 20px 0px;
+    background: var(--activeSubmenuColor);
+    /* padding: 10px; */
+    display: block;
+}
+#sidebar h3 {
+    font-size: 1em;
+}
+
+/* sidebar components (body) */
+#sidebar ul.components {
+    padding: 20px 0;
+}
+
+/* item block style */
+#sidebar a,
+#sidebar input {
+    padding: 10px 20px;
+    display: block;
+}
+
+#sidebar span {
+    padding: 10px 20px;
+    font-weight: bold;
+    display: block;
+}
+
+/* button effect setup */
+#sidebar a,
+#sidebar a:hover, 
+#sidebar a:focus {
+    color: inherit;
+    text-decoration: none;
+    transition: all 0.3s;
+}
+#sidebar a:hover {
+    color: var(--textColor);
+    background: var(--hoverColor);
+}
+#sidebar input,
+#sidebar input:hover, 
+#sidebar input:focus {
+    color: inherit;
+    text-decoration: none;
+    transition: all 0.3s;
+}
+#sidebar input:hover {
+    color: var(--textColor);
+    background: var(--hoverColor);
+}
+
+/* button active effect */
+#sidebar ul li.active > a, a[aria-expanded="true"] {
+    color: var(--textColor);
+    background: var(--activeSubmenuColor);
+}
+
+/* inner itens style */
+ul ul a,
+ul ul input {
+    font-size: 0.8em !important;
+    padding-left: 30px !important;
+    background: var(--activeSubmenuColor);
+}
+
+.buttonAsLink{
+    background-color: #00000000;
+    width: 100%;
+    text-align: left;
+    border: 0px;
+}

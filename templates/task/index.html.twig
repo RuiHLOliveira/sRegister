@@ -1,0 +1,19 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}
+    {{ title }}
+{% endblock %}
+
+{% block subtitle %}
+    {{ subtitle }}
+{% endblock %}
+
+{% block titleButtons %}
+    <a class="btn btn-sm btn-primary" href="{{ path('app_tasks_create')}}">New</a>
+{% endblock %}
+
+{% block content %}
+    {% for task in tasks %}
+        {{task.name}}<br><br>
+    {% endfor %}
+{% endblock %}
