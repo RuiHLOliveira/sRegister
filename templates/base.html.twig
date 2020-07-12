@@ -31,37 +31,36 @@
 
     <nav id="sidebar">
         <div class="sidebar-header">
-
             {# app name #}
             <a href="{{ path('home') }}">Symf App</a>
-
-            {# toggles menu #}
         </div>
         
         <ul id="nav-menu" class="list-unstyled components">
 
+        {% if not is_granted('IS_AUTHENTICATED_FULLY') %}
             {# login e register #}
             <li>
-                <a class="" href=" route('login') ">Login</a>
+                <a class="" href="{{ path('app_login') }}">Login</a>
             </li>
             <li>
-                <a class="" href=" route('register') ">Register</a>
+                <a class="" href="{{ path('app_registration_create') }}">Register</a>
             </li>
-
+        {% else %}
             {# menus e logout #}
             <li class="">
                 <a href="#homeSubmenu" data-toggle="collapse" class="dropdown-toggle">
-                    Hey, fulaninho!
+                    Hey, {{ app.user.email}}!
                 </a>
                 <ul class="collapse list-unstyled" id="homeSubmenu">
                     <li>
-                        <form id="" action=" route('logout') " method="POST">
+                        <form id="" action="{{ path('app_logout') }}" method="POST">
                             <input class="buttonAsLink" type="submit" value="Logout ">
                         </form>
                     </li>
                 </ul>
             </li>
-
+            <li><a></a></li>{# espaçamento bunda #}
+            
             <li>
                 <a class="" href="{{ path('app_tasks_index') }}">Inbox</a>
             </li>
@@ -95,6 +94,8 @@
             <li>
                 <a class="" href=" route('invitations.index') ">Invitations</a>
             </li>
+        
+        {% endif %}
                 
             <!-- item dropdown -->
             {# <li class="active">
