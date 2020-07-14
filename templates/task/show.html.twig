@@ -1,0 +1,59 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}
+    {{ title }}
+{% endblock %}
+
+{% block subtitle %}
+    {{ subtitle }}
+{% endblock %}
+
+{% block content %}
+
+        <div class="row">
+            <div class="col">
+                {{ task.name }}
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col">
+                {{ task.getDate }}
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col">
+                {{ task.description }}
+            </div>
+        </div>
+
+        <div class="row mt-5">
+            <div class="col">
+                <a class="mb-3 btn btn-danger btn-responsive" href="{{ path('app_tasks_index') }}">back</a>
+            </div>
+        </div>
+
+        {% for message in app.flashes('success') %}
+            <div class="row">
+                <div class="col">
+                    <div class="alert alert-success">
+                        {{ message }}
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+
+        {% for message in app.flashes('error') %}
+            <div class="row">
+                <div class="col">
+                    <div class="alert alert-danger">
+                        {{ message }}
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+
+    </form>
+</div>
+{% endblock %}

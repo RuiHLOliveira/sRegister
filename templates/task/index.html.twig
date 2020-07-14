@@ -13,7 +13,74 @@
 {% endblock %}
 
 {% block content %}
-    {% for task in tasks %}
-        {{task.name}}<br><br>
+
+    {% for message in app.flashes('success') %}
+        <div class="row">
+            <div class="col">
+                <div class="alert alert-success">
+                    {{ message }}
+                </div>
+            </div>
+        </div>
     {% endfor %}
+    
+    {% for message in app.flashes('error') %}
+        <div class="row">
+            <div class="col">
+                <div class="alert alert-danger">
+                    {{ message }}
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+
+    {% for task in tasks %}
+        <div class="row" style="margin-bottom: 20px;">
+            <div class="col">
+                <div class="cardModel">
+                    {# TASK NAME #}
+                    <div class="font15em font-weight-light">
+                        {{ task.name }}
+                    </div>
+
+                    {# BADGES COMPLETED AND DUE DATE #}
+                    <div>
+                        {# {% if task.situation %}
+                            <span class="badge badge-info">{{ task.situation.situation }}</span>
+                        {% endif %}
+
+                        {% if task.situation_id == 1 %}
+                            <span class="badge badge-primary">Due in: {{ task.getReadableDate }}</span>
+                        {% endif %} #}
+
+                        {% if task.completed %}
+                            <span class="badge badge-success">Task Completed!</span>
+                        {% endif %}
+                    </div>
+
+                    {# PROJECT #}
+                    {# {% if task.project_id %}
+                        <label for="" class="taskProjectFont">Project</label>
+                        <div class="">{{ task.project.name }}</div>
+                    {% endif %} #}
+
+                    {# DESCRIPTION #}
+                    <label for="" class="taskProjectFont">Description</label>
+                    <div class="mb-3 font-italic whiteSpacePreWrap">{{ task.description }}</div>
+
+                    <div>
+                        <a class="btn btn-outline-success btn-sm" href="{{ path('app_tasks_edit', {id: task.id})}}">Edit</a>
+                        <form class="d-inline" method="POST" action="{{ path('app_tasks_delete', {id: task.id}) }}">
+                            <input type="hidden" name="_method" value="DELETE">
+                            <button type="submit" class="btn btn-outline-danger btn-sm">Del</a>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+
+    {% if not tasks %}
+        There isn't any tasks
+    {% endif %}
 {% endblock %}
