@@ -37,6 +37,12 @@ class Task
      */
     private $completed = false;
 
+    /**
+     * @ORM\ManyToOne(targetEntity=User::class, inversedBy="tasks")
+     * @ORM\JoinColumn(nullable=false)
+     */
+    private $user_id;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -88,5 +94,36 @@ class Task
         $this->completed = $completed;
 
         return $this;
+    }
+
+    public function getUserId(): ?User
+    {
+        return $this->user_id;
+    }
+
+    public function setUserId(?User $user_id): self
+    {
+        $this->user_id = $user_id;
+
+        return $this;
+    }
+
+
+    /* CUSTOM METHODS */
+
+    public function getReadableDate(){
+        if(is_null($this->duedate)) return null;
+        $date = $this->duedate;
+        // $dateObject = \DateTime::createFromFormat('Y-m-d H:i:s',$date);
+        $duedateReadable = $date->format('D, d M Y');// H:i:s
+        return $duedateReadable;
+    }
+
+    public function getDate(){
+        if(is_null($this->duedate)) return null;
+        $date = $this->duedate;
+        // $dateObject = \DateTime::createFromFormat('Y-m-d H:i:s',$date);
+        $date = $date->format('Y-m-d');
+        return $date;
     }
 }
