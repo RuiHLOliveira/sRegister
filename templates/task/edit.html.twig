@@ -13,13 +13,19 @@
         <input type="hidden" name="_method" value="PUT">
 
 
-        {# @if($task->completed) #}
-            {# <div class="row">
+        {% if task.completed %}
+            <div class="row">
                 <div class="col">
                     <span class="badge badge-success">Task Completed!</span>
                 </div>
-            </div> #}
-        {# @endif #}
+            </div>
+        {% else %}
+            <div class="row">
+                <div class="col">
+                    <span class="badge badge-warning">Task Pending!</span>
+                </div>
+            </div>
+        {% endif %}
 
         <div class="row">
             <div class="col">
@@ -42,32 +48,30 @@
             </div>
         </div>
 
-        {# <div class="row">
+        <div class="row">
             <div class="col">
                 <button class="mb-3 btn btn-secondary btn-responsive" type="button" onclick="openProjectForm()" >Put in Project...</button>
             </div>
-        </div> #}
+        </div>
 
-        {# <div class="hidden row" id="projectFormRow">
+        <div class="hidden row" id="projectFormRow">
             <div class="col">
                 <div class="grayBox">
                     <label for="project">Projects</label>
                     <input type="hidden" name="considerProjectForm" id="considerProjectForm" value='0'>
                     <select class="form-control" name="project" id="project">
                         <option disabled selected value="">--</option>
-
-                        @foreach ($projects ?? [] as $project)
-                            @if ( $project->id == $task->project_id )
-                                <option selected value="{{ $project->id }}">{{ $project->name}}</option>
-                            @else
-                                <option value="{{ $project->id }}">{{ $project->name}}</option>
-                            @endif
-                        @endforeach
-
+                        {% for project in projects %}
+                            {% if not task.project == null and project.id == task.project.id %}
+                                <option selected value="{{ project.id }}">{{ project.name}}</option>
+                            {% else %}
+                                <option value="{{ project.id }}">{{ project.name }}</option>
+                            {% endif %}
+                        {% endfor %}
                     </select>
                 </div>
             </div>
-        </div> #}
+        </div>
 
         <div class="row mt-5">
             <div class="col">
@@ -89,13 +93,14 @@
 
     <div class="row  mt-5">
         <div class="col">
-            {# <form action="{{ route('tasks.taskToProject', $task->id) }}" method="POST">
-                @csrf
+            <form action="{{ path('app_tasks_tasktoproject', {id : task.id}) }}" method="POST">
                 <button class="mb-3 btn btn-default btn-responsive" type="submit">Transform in Project</button>
-                @if(!$task->completed)
-                    <a class="mb-3 btn btn-success btn-responsive" href="{{ route('tasks.completeTask', $task->id) }}">Complete Task</a>
-                @endif
-            </form> #}
+            </form>
+            {% if not task.completed %}
+                <form action="{{ path('app_tasks_completetask', {id:task.id}) }}" method="POST">
+                    <button type="submit" class="mb-3 btn btn-success btn-responsive">Complete Task</button>
+                </form>
+            {% endif %}
         </div>
     </div>
 
@@ -118,7 +123,6 @@
                 </div>
             </div>
         {% endfor %}
-
     </form>
 </div>
 {% endblock %}

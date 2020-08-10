@@ -1,0 +1,77 @@
+{% extends "base.html.twig" %}
+
+{# DEFINES TITLE #}
+{% block title %}
+    {{ title }}
+{% endblock %}
+
+{# DEFINES SIDE TITLE BUTTONS #}
+{% block titleButtons %}
+    {# <a class="btn btn-sm btn-primary" href="{{ route('projects.create')}}">New</a> #}
+{% endblock %}
+
+{# DEFINES SUBTITLE #}
+{% block subtitle %}
+    {{ subtitle }}
+{% endblock %}
+
+{# DEFINES PAGE CONTENT #}
+{% block content %}
+
+    {% for message in app.flashes('success') %}
+        <div class="row">
+            <div class="col">
+                <div class="alert alert-success">
+                    {{ message }}
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+
+    {% for message in app.flashes('error') %}
+        <div class="row">
+            <div class="col">
+                <div class="alert alert-danger">
+                    {{ message }}
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+
+    {% for project in projects %}
+        
+        <div class="row" style="margin-bottom: 20px;">
+            <div class="col">
+                <div class="cardModel">
+                
+                    <label for="" class="taskProjectFont">Project</label>
+                    <div class="font-italic">{{ project.name }}</div>
+                    {% if project.getCompleted %}
+                        <div class="row">
+                            <div class="col">
+                                <span class="badge badge-success">Project Completed!</span>
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    <div class="mt-3 mb-3 font-italic">
+                        <label for="" class="taskProjectFont">Tasks</label>
+                        {% for task in project.getTasks %}
+                            <div class="ml-3">{{ task.name }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="mb-3">
+                        <a class="btn btn-outline-success btn-sm" href="{{ path('app_projects_edit', {id:project.id}) }}">Edit</a>
+                        <form class="d-inline" action="{{ path('app_projects_destroy', {id:project.id}) }}" method="post">
+                            <input type="hidden" name="_method" value="DELETE">
+                            <button type="submit" class="btn btn-outline-danger btn-sm">Del</a>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+    There isn't any projects
+</div>
+{% endblock %}

@@ -45,13 +45,15 @@
 
                     {# BADGES COMPLETED AND DUE DATE #}
                     <div>
-                        {# {% if task.situation %}
+                        {% if task.situation %}
                             <span class="badge badge-info">{{ task.situation.situation }}</span>
+                        {% else %}
+                            <span class="badge badge-primary">New</span>
                         {% endif %}
 
-                        {% if task.situation_id == 1 %}
+                        {% if task.situation and task.situation.id == 1 %}
                             <span class="badge badge-primary">Due in: {{ task.getReadableDate }}</span>
-                        {% endif %} #}
+                        {% endif %}
 
                         {% if task.completed %}
                             <span class="badge badge-success">Task Completed!</span>
@@ -59,14 +61,25 @@
                     </div>
 
                     {# PROJECT #}
-                    {# {% if task.project_id %}
+                    {% if task.project %}
+                    <div>
                         <label for="" class="taskProjectFont">Project</label>
-                        <div class="">{{ task.project.name }}</div>
-                    {% endif %} #}
+                        <span class="">{{ task.project.name }}</span>
+                    </div>
+                    {% endif %}
 
                     {# DESCRIPTION #}
-                    <label for="" class="taskProjectFont">Description</label>
-                    <div class="mb-3 font-italic whiteSpacePreWrap">{{ task.description }}</div>
+                    <div>
+                        <label for="" class="taskProjectFont">Description</label>
+                        <div class="font-italic whiteSpacePreWrap">{{ task.description }}</div>
+                    </div>
+
+                    <div class="">
+                        <span class="badge badge-secondary">Created {{ task.getCreatedAt|date("d/m/Y H:i:s") }}</span>
+                    </div>
+                    <div class="mb-3">
+                        <span class="badge badge-secondary">Updated {{ task.getUpdatedAt|date("d/m/Y H:i:s") }}</span>
+                    </div>
 
                     <div>
                         <a class="btn btn-outline-success btn-sm" href="{{ path('app_tasks_edit', {id: task.id})}}">Edit</a>

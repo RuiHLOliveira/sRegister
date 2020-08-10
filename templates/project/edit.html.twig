@@ -1,0 +1,119 @@
+{% extends "base.html.twig" %}
+
+{# DEFINES TITLE #}
+{% block title %}
+    {{ title }}
+{% endblock %}
+
+{# DEFINES SIDE TITLE BUTTONS #}
+{% block titleButtons %}
+    {# <a class="btn btn-sm btn-primary" href="{{ route('projects.create')}}">New</a> #}
+{% endblock %}
+
+{# DEFINES SUBTITLE #}
+{% block subtitle %}
+    {{ subtitle }}
+{% endblock %}
+
+{# DEFINES PAGE CONTENT #}
+{% block content %}
+
+    <form action="{{ path('app_projects_update', {id:project.id}) }}" method="POST" class="form-group">
+        <input type='hidden' name="_method" value="PUT">
+
+        {% if project.getCompleted %}
+            <div class="row">
+                <div class="col">
+                    <span class="badge badge-success">Project Completed!</span>
+                </div>
+            </div>
+        {% endif %}
+
+        <div class="row">
+            <div class="col">
+                <label for="name">Name</label>
+                <input class="form-control" type="text" name="name" value="{{ project.getName }}" required>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col">
+                <label for="duedate">Due Date</label>
+                <input class="form-control" type="date" name="duedate" value="{{ project.getDate }}">
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col">
+                <label for="description">Description</label>
+                <textarea rows="6" class="form-control" type="text" name="description">{{ project.getDescription }}</textarea>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col">
+                <a class="btn btn-danger" href="{{ path('app_projects_index') }}">back</a>
+                <button class="btn btn-success" onclick="onSubmitLogic()" type="submit">Just Save</button>
+            </div>
+        </div>
+
+    </form>
+
+    <div class="row">
+        <div class="col">
+            {% if not project.getCompleted %}
+            <form action="{{ path('app_projects_completeproject', {id:project.id}) }}" method="POST">
+                <button type="submit" class="btn btn-success">Mark as completed</button>
+            </form>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col">
+            <button class="btn btn-primary" onclick="showViewInsertTask()" type="button">Add a Task</button>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col">
+            <form id="insertTaskForm" class="form-group hidden" action="{{ path('app_tasks_store') }}" method="POST">
+                <div class="grayBox">
+                    <div class="row">
+                        <div class="col">
+                            <label for="name">Name</label>
+                            <input class="form-control" type="hidden" name="project" value="{{ project.id }}" required>
+                            <input class="form-control" type="text" name="name" required>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col">
+                            <button class="btn btn-success" type="submit">Add</button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {% for message in app.flashes('success') %}
+        <div class="row">
+            <div class="col">
+                <div class="alert alert-success">
+                    {{ message }}
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+
+    {% for message in app.flashes('error') %}
+        <div class="row">
+            <div class="col">
+                <div class="alert alert-danger">
+                    {{ message }}
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+
+{% endblock %}

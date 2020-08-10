@@ -2,13 +2,15 @@
 
 namespace App\Entity;
 
-use App\Repository\TaskRepository;
+use App\Repository\ProjectRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * @ORM\Entity(repositoryClass=TaskRepository::class)
+ * @ORM\Entity(repositoryClass=ProjectRepository::class)
  */
-class Task
+class Project
 {
     /**
      * @ORM\Id()
@@ -23,7 +25,7 @@ class Task
     private $name;
 
     /**
-     * @ORM\Column(type="text", nullable=true)
+     * @ORM\Column(type="string", length=255, nullable=true)
      */
     private $description;
 
@@ -38,17 +40,6 @@ class Task
     private $completed = false;
 
     /**
-     * @ORM\ManyToOne(targetEntity=User::class, inversedBy="tasks")
-     * @ORM\JoinColumn(nullable=false)
-     */
-    private $user;
-
-    /**
-     * @ORM\ManyToOne(targetEntity=Situation::class, inversedBy="tasks")
-     */
-    private $situation;
-
-    /**
      * @ORM\Column(type="datetime")
      */
     private $created_at;
@@ -59,16 +50,21 @@ class Task
     private $updated_at;
 
     /**
-     * @ORM\ManyToOne(targetEntity=Project::class, inversedBy="tasks")
+     * @ORM\ManyToOne(targetEntity=User::class, inversedBy="projects")
+     * @ORM\JoinColumn(nullable=false)
      */
-    private $project;
+    private $user;
 
-     /* CUSTOM METHODS */
+    /**
+     * @ORM\OneToMany(targetEntity=Task::class, mappedBy="project")
+     */
+    private $tasks;
 
     public function __construct()
     {
         $this->created_at = new \DateTime('now');
         $this->updated_at = new \DateTime('now');
+        $this->tasks = new ArrayCollection();
     }
 
     public function getReadableDate(){
@@ -86,8 +82,6 @@ class Task
         $date = $date->format('Y-m-d');
         return $date;
     }
-
-
 
     public function getId(): ?int
     {
@@ -142,6 +136,30 @@ class Task
         return $this;
     }
 
+    public function getCreatedAt(): ?\DateTimeInterface
+    {
+        return $this->created_at;
+    }
+
+    // public function setCreatedAt(\DateTimeInterface $created_at): self
+    // {
+    //     $this->created_at = $created_at;
+
+    //     return $this;
+    // }
+
+    public function getUpdatedAt(): ?\DateTimeInterface
+    {
+        return $this->updated_at;
+    }
+
+    public function setUpdatedAt(): self
+    {
+        $this->updated_at = new \DateTime("now");
+
+        return $this;
+    }
+
     public function getUser(): ?User
     {
         return $this->user;
@@ -154,50 +172,33 @@ class Task
         return $this;
     }
 
-    public function getSituation(): ?Situation
+    /**
+     * @return Collection|Task[]
+     */
+    public function getTasks(): Collection
     {
-        return $this->situation;
+        return $this->tasks;
     }
 
-    public function setSituation(?Situation $situation): self
+    public function addTask(Task $task): self
     {
-        $this->situation = $situation;
+        if (!$this->tasks->contains($task)) {
+            $this->tasks[] = $task;
+            $task->setProject($this);
+        }
 
         return $this;
     }
 
-    public function getCreatedAt(): ?\DateTimeInterface
+    public function removeTask(Task $task): self
     {
-        return $this->created_at;
-    }
-
-    // public function setCreatedAt(\DateTimeInterface $created_at = null): self
-    // {
-    //     $this->created_at = $created_at !== null ? $created_at : new \DateTime('now');
-
-    //     return $this;
-    // }
-
-    public function getUpdatedAt(): ?\DateTimeInterface
-    {
-        return $this->updated_at;
-    }
-
-    public function setUpdatedAt(): self
-    {
-        $this->updated_at = new \DateTime('now');
-
-        return $this;
-    }
-
-    public function getProject(): ?Project
-    {
-        return $this->project;
-    }
-
-    public function setProject(?Project $project): self
-    {
-        $this->project = $project;
+        if ($this->tasks->contains($task)) {
+            $this->tasks->removeElement($task);
+            // set the owning side to null (unless already changed)
+            if ($task->getProject() === $this) {
+                $task->setProject(null);
+            }
+        }
 
         return $this;
     }

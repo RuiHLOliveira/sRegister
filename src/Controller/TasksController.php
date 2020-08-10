@@ -2,6 +2,8 @@
 
 namespace App\Controller;
 
+use App\Entity\Project;
+use App\Entity\Situation;
 use App\Entity\Task;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -32,25 +34,28 @@ class TasksController extends AbstractController
         try {
             $postData = $request->request;
 
-            //validating
             if($postData->get('name') === null || $postData->get('name') === ''){
                 throw new ValidationException('Name is needed');
             }
 
             $task = new Task();
             $task->setName($postData->get('name'));
-            $task->setUserId($this->getUser());
+            $task->setUser($this->getUser());
 
-            // if (isset($data['project']) ) {
-            //     $project = Project::where([
-            //         'user_id' => $task->user_id,
-            //         'id' => $data['project']
-            //     ])->first();
-            //     if($project == null){
-            //         throw new NoResultException("Project not found", 1);//ver esse
-            //     }
-            //     $task->project_id = $project->id;
-            // }
+            $projectFromRequest = $postData->get('project');
+            if(isset($projectFromRequest)
+                && $projectFromRequest != ''
+            ) {
+                $project = $this->getDoctrine()->getRepository(Project::class)
+                    ->findOneBy([
+                    'user' => $this->getUser(),
+                    'id' => $projectFromRequest
+                ]);
+                if($project == null){
+                    $this->createNotFoundException("Project not found");
+                }
+                $task->setProject($project);
+            }
             
             $entityManager = $this->getDoctrine()->getManager();
             $entityManager->persist($task);
@@ -65,6 +70,7 @@ class TasksController extends AbstractController
             return $this->redirectToRoute('app_tasks_create');
         } catch (Exception $e) {
             // Log::error($e->getMessage());
+            throw $e;
             $this->addFlash('error', 'There was an error while storing your task.');
             return $this->redirectToRoute('app_tasks_create');
         }
@@ -78,11 +84,11 @@ class TasksController extends AbstractController
         try {
             $user = $this->getUser();
             $task = $this->getDoctrine()->getRepository(Task::class)
-                ->findBy(['id' => $id, 'user_id' => $user->getId()]);
+                ->findOneBy(['id' => $id, 'user' => $user]);
             if($task == null){
                 $this->createNotFoundException("Task not found");
             }
-            $task = $task[0];
+            
             return $this->render('task/show.html.twig', [
                 'title' => 'Details',
                 'subtitle' => "about your item",
@@ -107,27 +113,26 @@ class TasksController extends AbstractController
             $user = $this->getUser();
             $task = $this->getDoctrine()
                 ->getRepository(Task::class)
-                ->findBy([
+                ->findOneBy([
                     'id' => $id,
-                    'user_id' => $user->getId()
+                    'user' => $user
                 ]);
             if($task == null){
                 throw $this->createNotFoundException ('Task not found');
             }
-            $task = $task[0];
 
-            // $situations = Situation::where('user_id', $user_id)->get();
-            
-            // $projects = Project::where([
-            //     'user_id' => $user_id
-            // ])->orderBy('created_at','desc')->get();
+            $projects = $this->getDoctrine()->getRepository(Project::class)
+                ->findBy([
+                'user' => $user
+                ],['created_at' => 'DESC'] //orderBy
+            );
             
             return $this->render('task/edit.html.twig', [
                 'title' => 'Edit Task',
                 'subtitle' => 'edit your task',
                 'task' => $task,
                 // 'situations' => $situations,
-                // 'projects' => $projects
+                'projects' => $projects
             ]);
         } catch (NotFoundHttpException $e) {
             $this->addFlash('error', $e->getMessage());
@@ -149,7 +154,6 @@ class TasksController extends AbstractController
         try {
             
             $postData = $request->request;
-
             //validating
             if($postData->get('name') === null || $postData->get('name') === ''){
                 throw new ValidationException('Name is needed');
@@ -158,33 +162,40 @@ class TasksController extends AbstractController
             $user = $this->getUser();
             $task = $this->getDoctrine()
                 ->getRepository(Task::class)
-                ->findBy([
+                ->findOneBy([
                     'id' => $id,
-                    'user_id' => $user->getId()
+                    'user' => $user
                 ]);
             if($task == null){
                 $this->createNotFoundException('Task not found');
             }
-            $task = $task[0];
+            $considerProjectForm = $postData->get('considerProjectForm');
+            $projectFromRequest = $postData->get('project');
+            if(isset($considerProjectForm)
+                && $considerProjectForm == 1
+                && isset($projectFromRequest)
+                && $projectFromRequest != ''
+            ) {
+                $project = $this->getDoctrine()->getRepository(Project::class)
+                    ->findOneBy([
+                    'user' => $user,
+                    'id' => $projectFromRequest
+                ]);
+                if($project == null){
+                    $this->createNotFoundException("Project not found");
+                }
+                $task->setProject($project);
+            }
 
-            // if(isset($data['considerProjectForm']) 
-            //     && $data['considerProjectForm'] == 1
-            //     && isset($data['project'])
-            //     && $data['project'] != ''
-            // ) {
-            //     $project = Project::where([
-            //         'user_id' => $user_id,
-            //         'id' => $data['project']
-            //     ])->first();
-            //     if($project == null){
-            //         throw new NoResultException("Project not found", 1);
-            //     }
-            //     $task->project_id = $project->id;
-            // }
+            if(!empty($postData->get('targetSituation'))) {
+                $situation = $this->getDoctrine()->getRepository(Situation::class)
+                    ->findOneBy(['id' => $postData->get('targetSituation')]);
+                if($situation == null){
+                    $this->createNotFoundException('Desired situation not found');
+                }
+                $task->setSituation($situation);
+            }
 
-            // if(isset($data['targetSituation'])) {
-            //     $task->situation_id = $data['targetSituation'];
-            // }
             if(!empty($postData->get('duedate'))) {
                 $date = $postData->get('duedate');
                 $date = \DateTime::createFromFormat('Y-m-d', $date);
@@ -204,10 +215,12 @@ class TasksController extends AbstractController
             return $this->redirectToRoute('app_tasks_edit',['id'=>$id]);
         } catch (NotFoundHttpException $e) {
             $this->addFlash('error', $e->getMessage());
+            return $this->redirectToRoute('app_tasks_edit',['id'=>$id]);
         } catch (\Exception $e) {
             // Log::error($e->getMessage());
+            throw $e;
             $this->addFlash('error','There was an error while updating your task.');
-            $this->redirectToRoute('app_index_edit',['id'=>$id]);
+            return $this->redirectToRoute('app_tasks_edit',['id'=>$id]);
         }
     }
 
@@ -219,15 +232,14 @@ class TasksController extends AbstractController
         try {
             $user = $this->getUser();
             $task = $this->getDoctrine()->getRepository(Task::class)
-                ->findBy([
+                ->findOneBy([
                     'id' => $id,
-                    'user_id' => $user->getId()
+                    'user' => $user
                 ]);
 
             if (!$task) {
                 throw $this->createNotFoundException('Task not found');
             }
-            $task = $task[0];
 
             $entityManager = $this->getDoctrine()->getManager();
             $entityManager->remove($task);
@@ -252,19 +264,13 @@ class TasksController extends AbstractController
         try {
             $user = $this->getUser();
 
-            /**
-             * Fazer filtros abaixo
-             * ->whereNull('situation_id')
-             * ->orderBy('created_at','desc')
-             */
             $tasks = $this->getDoctrine()
                 ->getRepository(Task::class)
                 ->findBy([
-                    'user_id' => $user->getId(),
-                    // 'situation_id' => null,
-                ],
-                    // ['created_at' => 'ASC']
-                );
+                    'user' => $user,
+                    'situation' => null,
+                ],['created_at' => 'DESC'] //orderby
+            );
 
             $title='Inbox';
             $subtitle='declutter your mind here';
@@ -280,4 +286,245 @@ class TasksController extends AbstractController
         }
     }
 
+    /**
+     * @Route("/tickler", methods={"GET", "HEAD"})
+     */
+    public function tickler()
+    {
+        try {
+            $user = $this->getUser();
+
+            $tasks = $this->getDoctrine()
+                ->getRepository(Task::class)
+                ->findBy([
+                    'user' => $user,
+                    'situation' => '1',
+                ],['created_at' => 'DESC'] //orderby
+            );
+
+            $title='Tickler';
+            $subtitle='stuff you need to remember today';
+            return $this->render('task/index.html.twig',compact(
+                'tasks', 'title', 'subtitle'
+            ));
+
+        } catch (\Exception $e) {
+            // Log::error($e->getMessage());
+            throw $e;
+            $this->addFlash('error', 'There was an error while getting your tasks.');
+            return $this->redirectToRoute('app_tasks_create');
+        }
+    }
+
+    /**
+     * @Route("/waitingfor", methods={"GET", "HEAD"})
+     */
+    public function waitingfor()
+    {
+        try {
+            $user = $this->getUser();
+
+            $tasks = $this->getDoctrine()
+                ->getRepository(Task::class)
+                ->findBy([
+                    'user' => $user,
+                    'situation' => '2',
+                ],['created_at' => 'DESC'] //orderby
+            );
+
+            $title='Waiting For';
+            $subtitle="waiting someone's callback";
+            return $this->render('task/index.html.twig',compact(
+                'tasks', 'title', 'subtitle'
+            ));
+
+        } catch (\Exception $e) {
+            // Log::error($e->getMessage());
+            throw $e;
+            $this->addFlash('error', 'There was an error while getting your tasks.');
+            return $this->redirectToRoute('app_tasks_create');
+        }
+    }
+
+    /**
+     * @Route("/recurring", methods={"GET", "HEAD"})
+     */
+    public function recurring()
+    {
+        try {
+            $user = $this->getUser();
+
+            $tasks = $this->getDoctrine()
+                ->getRepository(Task::class)
+                ->findBy([
+                    'user' => $user,
+                    'situation' => '3',
+                ],['created_at' => 'DESC'] //orderby
+            );
+
+            $title='Recurring';
+            $subtitle="tasks you do everyday";
+            return $this->render('task/index.html.twig',compact(
+                'tasks', 'title', 'subtitle'
+            ));
+
+        } catch (\Exception $e) {
+            // Log::error($e->getMessage());
+            throw $e;
+            $this->addFlash('error', 'There was an error while getting your tasks.');
+            return $this->redirectToRoute('app_tasks_create');
+        }
+    }
+
+    /**
+     * @Route("/next", methods={"GET", "HEAD"})
+     */
+    public function next()
+    {
+        try {
+            $user = $this->getUser();
+
+            $tasks = $this->getDoctrine()
+                ->getRepository(Task::class)
+                ->findBy([
+                    'user' => $user,
+                    'situation' => '4',
+                ],['created_at' => 'DESC'] //orderby
+            );
+
+            $title='Next';
+            $subtitle="next actions you need to do";
+            return $this->render('task/index.html.twig',compact(
+                'tasks', 'title', 'subtitle'
+            ));
+
+        } catch (\Exception $e) {
+            // Log::error($e->getMessage());
+            throw $e;
+            $this->addFlash('error', 'There was an error while getting your tasks.');
+            return $this->redirectToRoute('app_tasks_create');
+        }
+    }
+
+    /**
+     * @Route("/readlist", methods={"GET", "HEAD"})
+     */
+    public function readlist()
+    {
+        try {
+            $user = $this->getUser();
+
+            $tasks = $this->getDoctrine()
+                ->getRepository(Task::class)
+                ->findBy([
+                    'user' => $user,
+                    'situation' => '5',
+                ],['created_at' => 'DESC'] //orderby
+            );
+
+            $title='Reading List';
+            $subtitle="articles, videos and stuff you want to read/watch";
+            return $this->render('task/index.html.twig',compact(
+                'tasks', 'title', 'subtitle'
+            ));
+
+        } catch (\Exception $e) {
+            // Log::error($e->getMessage());
+            throw $e;
+            $this->addFlash('error', 'There was an error while getting your tasks.');
+            return $this->redirectToRoute('app_tasks_create');
+        }
+    }
+
+    /**
+     * @Route("/somedaymaybe", methods={"GET", "HEAD"})
+     */
+    public function somedaymaybe()
+    {
+        try {
+            $user = $this->getUser();
+
+            $tasks = $this->getDoctrine()
+                ->getRepository(Task::class)
+                ->findBy([
+                    'user' => $user,
+                    'situation' => '6',
+                ],['created_at' => 'DESC'] //orderby
+            );
+
+            $title='Someday/Maybe';
+            $subtitle="things you want to do someday, but not week... or this month... or this year";
+            return $this->render('task/index.html.twig',compact(
+                'tasks', 'title', 'subtitle'
+            ));
+
+        } catch (\Exception $e) {
+            // Log::error($e->getMessage());
+            throw $e;
+            $this->addFlash('error', 'There was an error while getting your tasks.');
+            return $this->redirectToRoute('app_tasks_create');
+        }
+    }
+
+    /**
+     * @Route("/tasks/{id}/completeTask", methods={"POST"})
+     */
+    public function completeTask($id) {
+        try {
+            $user = $this->getUser();
+            $task = $this->getDoctrine()->getRepository(Task::class)
+                ->findOneBy(['id' => $id, 'user' => $user]);
+            if($task == null){
+                $this->createNotFoundException("Task not found");
+            }
+            $task->setCompleted(true);
+            $em = $this->getDoctrine()->getManager();
+            $em->persist($task);
+            $em->flush();
+            $this->addFlash('success','Tasks marked as completed');
+            return $this->redirectToRoute('app_tasks_index');
+        } catch (NotFoundHttpException $e) {
+            $this->addFlash('error',$e->getMessage());
+            return $this->redirectToRoute('app_tasks_edit',['id' => $id]);
+        } catch (\Exception $e) {
+            // Log::error($e->getMessage());
+            $this->addFlash('error','There was an error while trying to complete this task.');
+            return $this->redirectToRoute('app_tasks_edit',['id' => $id]);
+        }
+    }
+
+    /**
+     * @Route("/tasks/{id}/taskToProject", methods={"POST"})
+     */
+    public function taskToProject($id){
+        try {
+            $user = $this->getUser();
+            $task = $this->getDoctrine()->getRepository(Task::class)
+                ->findOneBy(['id' => $id, 'user' => $user]);
+            if($task == null){
+                $this->createNotFoundException("Task not found");
+            }
+
+            $project = new Project();
+            $project->setName($task->getName());
+            $project->setDescription($task->getDescription());
+            $project->setDuedate($task->getDuedate());
+            $project->setUser($user);
+
+            $em = $this->getDoctrine()->getManager();
+            $em->persist($project);
+            $em->remove($task);
+            $em->flush();
+            $this->addFlash('success',"Task transformed in project successfully");
+            return $this->redirectToRoute('app_tasks_index');
+        } catch (NotFoundHttpException $e) {
+            $this->addFlash('error',$e->getMessage());
+            return $this->redirectToRoute('app_tasks_edit',['id' => $id]);
+        } catch (\Exception $e) {
+            // Log::error($e->getMessage());
+            throw $e;
+            $this->addFlash('error','There was an error while converting this task to project.');
+            return $this->redirectToRoute('app_tasks_edit',['id' => $id]);
+        }
+    }
 }
