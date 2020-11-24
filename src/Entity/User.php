@@ -51,11 +51,17 @@ class User implements UserInterface
      */
     private $projects;
 
+    /**
+     * @ORM\OneToMany(targetEntity=InvitationToken::class, mappedBy="user")
+     */
+    private $invitationTokens;
+
     public function __construct()
     {
         $this->tasks = new ArrayCollection();
         $this->situations = new ArrayCollection();
         $this->projects = new ArrayCollection();
+        $this->invitationTokens = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -223,6 +229,37 @@ class User implements UserInterface
             // set the owning side to null (unless already changed)
             if ($project->getUser() === $this) {
                 $project->setUser(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|InvitationToken[]
+     */
+    public function getInvitationTokens(): Collection
+    {
+        return $this->invitationTokens;
+    }
+
+    public function addInvitationToken(InvitationToken $invitationToken): self
+    {
+        if (!$this->invitationTokens->contains($invitationToken)) {
+            $this->invitationTokens[] = $invitationToken;
+            $invitationToken->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeInvitationToken(InvitationToken $invitationToken): self
+    {
+        if ($this->invitationTokens->contains($invitationToken)) {
+            $this->invitationTokens->removeElement($invitationToken);
+            // set the owning side to null (unless already changed)
+            if ($invitationToken->getUser() === $this) {
+                $invitationToken->setUser(null);
             }
         }
 

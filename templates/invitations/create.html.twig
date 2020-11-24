@@ -1,0 +1,59 @@
+{% extends "base.html.twig" %}
+
+{# DEFINES TITLE #}
+{% block title %}
+    {{ title }}
+{% endblock %}
+
+{# DEFINES SIDE TITLE BUTTONS #}
+{% block titleButtons %}
+    {# <a class="btn btn-sm btn-primary" href="{{ route('projects.create')}}">New</a> #}
+{% endblock %}
+
+{# DEFINES SUBTITLE #}
+{% block subtitle %}
+    {{ subtitle }}
+{% endblock %}
+
+{# DEFINES PAGE CONTENT #}
+{% block content %}
+
+    <form action="{{ path('app_invitationtoken_store') }}" method="POST" class="form-group">
+
+        <div class="row">
+            <div class="col">
+                <label for="invitationToken">Invitation Token - not required</label>
+                <input class="form-control" type="text" name="invitationToken">
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col">
+                <a class="btn btn-danger" href="{{ path('app_invitationtoken_index') }}">back</a>
+                <button class="btn btn-success" type="submit">Add</button>
+            </div>
+        </div>
+
+        {% for message in app.flashes('success') %}
+            <div class="row">
+                <div class="col">
+                    <div class="alert alert-success">
+                        {{ message }}
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+
+        {% for message in app.flashes('error') %}
+            <div class="row">
+                <div class="col">
+                    <div class="alert alert-danger">
+                        {{ message }}
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+
+    </form>
+</div>
+{% endblock %}

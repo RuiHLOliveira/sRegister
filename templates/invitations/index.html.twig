@@ -1,0 +1,72 @@
+{% extends "base.html.twig" %}
+
+{# DEFINES TITLE #}
+{% block title %}
+    {{ title }}
+{% endblock %}
+
+{# DEFINES SIDE TITLE BUTTONS #}
+{% block titleButtons %}
+    <a class="btn btn-sm btn-primary" href="{{ path('app_invitationtoken_create') }}">New</a>
+{% endblock %}
+
+
+
+{# DEFINES SUBTITLE #}
+{% block subtitle %}
+    {{ subtitle }}
+{% endblock %}
+
+{# DEFINES PAGE CONTENT #}
+{% block content %}
+    
+    {% for message in app.flashes('success') %}
+        <div class="row">
+            <div class="col">
+                <div class="alert alert-success">
+                    {{ message }}
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+
+    {% for message in app.flashes('error') %}
+        <div class="row">
+            <div class="col">
+                <div class="alert alert-danger">
+                    {{ message }}
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+
+
+    {% if not invitations %}
+        There isn't any invitation
+    {% endif %}
+
+    {% for invitation in invitations %}
+        
+        <div class="row" style="margin-bottom: 20px;">
+            <div class="col">
+                <div class="cardModel">
+                    {# invitation NAME #}
+                    <div class="font15em font-weight-light">
+                        {{ invitation.id }} - {{ invitation.invitationToken }}<br>
+                        {{ url('app_registration_create') }}?invitation_token={{ invitation.id }}_{{ invitation.invitationToken }}
+                    </div>
+
+                    {# BADGES COMPLETED AND DUE DATE #}
+                    <div>
+                        {% if invitation.active %}
+                            <span class="badge badge-success">Active</span>
+                        {% else %}
+                            <span class="badge badge-danger">Inactive</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+</div>
+%{% endblock %}

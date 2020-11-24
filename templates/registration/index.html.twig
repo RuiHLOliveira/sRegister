@@ -5,11 +5,32 @@
 {% block content %}
 
 <form method="POST" action="{{ path('app_registration_store') }}">
+    <input type="hidden" name="invitation_token" value="{{ invitation_token }}">
     <input name="email" type="text" placeholder="email">
     <input name="password" type="password" placeholder="password">
     <input name="repeatPassword" type="password" placeholder="repeat Password">
 
     <input type="submit" value="register!">
+
+    {% for message in app.flashes('success') %}
+        <div class="row">
+            <div class="col">
+                <div class="alert alert-success">
+                    {{ message }}
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+
+    {% for message in app.flashes('error') %}
+        <div class="row">
+            <div class="col">
+                <div class="alert alert-danger">
+                    {{ message }}
+                </div>
+            </div>
+        </div>
+    {% endfor %}
 </form>
 
 {% endblock %}

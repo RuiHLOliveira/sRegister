@@ -26,6 +26,7 @@ class CustomAuthenticator extends AbstractFormLoginAuthenticator implements Pass
 
     public const LOGIN_ROUTE = 'app_login';
 
+    private $defaultPostLoginRoute = 'app_tasks_index';
     private $entityManager;
     private $urlGenerator;
     private $csrfTokenManager;
@@ -92,13 +93,13 @@ class CustomAuthenticator extends AbstractFormLoginAuthenticator implements Pass
 
     public function onAuthenticationSuccess(Request $request, TokenInterface $token, $providerKey)
     {
-        if ($targetPath = $this->getTargetPath($request->getSession(), $providerKey)) {
-            return new RedirectResponse($targetPath);
-        }
+        // if ($targetPath = $this->getTargetPath($request->getSession(), $providerKey)) {
+        //     return new RedirectResponse($targetPath);
+        // }
 
         // For example : return new RedirectResponse($this->urlGenerator->generate('some_route'));
         // throw new \Exception('TODO: provide a valid redirect inside '.__FILE__);
-        return new RedirectResponse($this->urlGenerator->generate('home'));
+        return new RedirectResponse($this->urlGenerator->generate($this->defaultPostLoginRoute));
     }
 
     protected function getLoginUrl()

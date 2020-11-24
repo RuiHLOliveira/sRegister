@@ -72,6 +72,9 @@
             </div>
         </div>
     {% endfor %}
-    There isn't any projects
+    
+    {% if not projects %}
+        There isn't any projects
+    {% endif %}
 </div>
 {% endblock %}

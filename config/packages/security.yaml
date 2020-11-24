@@ -18,6 +18,8 @@ security:
             anonymous: true
             lazy: true
             provider: app_user_provider
+            form_login: 
+                default_target_path: login_success
             guard:
                 authenticators:
                     - App\Security\CustomAuthenticator

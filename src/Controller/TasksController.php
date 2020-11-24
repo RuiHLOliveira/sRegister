@@ -208,7 +208,6 @@ class TasksController extends AbstractController
             $entityManager->persist($task);
             $entityManager->flush();
             
-            // BackupManager::dumpDatabase('myregister');
             return $this->redirectToRoute('app_tasks_index');
         } catch (ValidationException $e) {
             $this->addFlash('error', $e->getMessage());
@@ -269,7 +268,7 @@ class TasksController extends AbstractController
                 ->findBy([
                     'user' => $user,
                     'situation' => null,
-                ],['created_at' => 'DESC'] //orderby
+                ],['created_at' => 'DESC'] //orderBy
             );
 
             $title='Inbox';
@@ -299,7 +298,7 @@ class TasksController extends AbstractController
                 ->findBy([
                     'user' => $user,
                     'situation' => '1',
-                ],['created_at' => 'DESC'] //orderby
+                ],['created_at' => 'DESC'] //orderBy
             );
 
             $title='Tickler';
@@ -329,7 +328,7 @@ class TasksController extends AbstractController
                 ->findBy([
                     'user' => $user,
                     'situation' => '2',
-                ],['created_at' => 'DESC'] //orderby
+                ],['created_at' => 'DESC'] //orderBy
             );
 
             $title='Waiting For';
@@ -359,7 +358,7 @@ class TasksController extends AbstractController
                 ->findBy([
                     'user' => $user,
                     'situation' => '3',
-                ],['created_at' => 'DESC'] //orderby
+                ],['created_at' => 'DESC'] //orderBy
             );
 
             $title='Recurring';
@@ -389,7 +388,7 @@ class TasksController extends AbstractController
                 ->findBy([
                     'user' => $user,
                     'situation' => '4',
-                ],['created_at' => 'DESC'] //orderby
+                ],['created_at' => 'DESC'] //orderBy
             );
 
             $title='Next';
@@ -419,7 +418,7 @@ class TasksController extends AbstractController
                 ->findBy([
                     'user' => $user,
                     'situation' => '5',
-                ],['created_at' => 'DESC'] //orderby
+                ],['created_at' => 'DESC'] //orderBy
             );
 
             $title='Reading List';
@@ -449,7 +448,7 @@ class TasksController extends AbstractController
                 ->findBy([
                     'user' => $user,
                     'situation' => '6',
-                ],['created_at' => 'DESC'] //orderby
+                ],['created_at' => 'DESC'] //orderBy
             );
 
             $title='Someday/Maybe';
