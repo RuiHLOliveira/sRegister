@@ -21,6 +21,8 @@ final class Version20201124231458 extends AbstractMigration
     {
         // this up() migration is auto-generated, please modify it to your needs
         $this->addSql('ALTER TABLE invitation_token CHANGE user_id user_id INT DEFAULT NULL');
+
+        $this->addSql("INSERT INTO invitation_token (id, invitation_token) VALUES (1, 123456);");
     }
 
     public function down(Schema $schema) : void

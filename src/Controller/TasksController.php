@@ -56,6 +56,13 @@ class TasksController extends AbstractController
                 }
                 $task->setProject($project);
             }
+
+            $situation = $this->getDoctrine()->getRepository(Situation::class)
+                ->findOneBy(['id' => 1]);
+            if($situation == null){
+                $this->createNotFoundException('Desired situation not found');
+            }
+            $task->setSituation($situation);
             
             $entityManager = $this->getDoctrine()->getManager();
             $entityManager->persist($task);
@@ -267,14 +274,17 @@ class TasksController extends AbstractController
                 ->getRepository(Task::class)
                 ->findBy([
                     'user' => $user,
-                    'situation' => null,
+                    // 'situation' => null,
                 ],['created_at' => 'DESC'] //orderBy
             );
+
+            $situations = $this->getDoctrine()->getRepository(Situation::class)
+                ->findAll();
 
             $title='Inbox';
             $subtitle='declutter your mind here';
             return $this->render('task/index.html.twig',compact(
-                'tasks', 'title', 'subtitle'
+                'tasks', 'title', 'subtitle', 'situations'
             ));
 
         } catch (\Exception $e) {

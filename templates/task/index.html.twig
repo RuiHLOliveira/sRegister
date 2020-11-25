@@ -51,8 +51,8 @@
                             <span class="badge badge-primary">New</span>
                         {% endif %}
 
-                        {% if task.situation and task.situation.id == 1 %}
-                            <span class="badge badge-primary">Due in: {{ task.getReadableDate }}</span>
+                        {% if task.duedate %}
+                            <span class="badge badge-primary">Due in: {{ task.duedate|date("d/m/Y") }}</span>
                         {% endif %}
 
                         {% if task.completed %}
@@ -75,10 +75,10 @@
                     </div>
 
                     <div class="">
-                        <span class="badge badge-secondary">Created {{ task.getCreatedAt|date("d/m/Y H:i:s") }}</span>
+                        <span class="badge badge-secondary">Created {{ task.getCreatedAt|date("d/m/Y") }}</span>
                     </div>
                     <div class="mb-3">
-                        <span class="badge badge-secondary">Updated {{ task.getUpdatedAt|date("d/m/Y H:i:s") }}</span>
+                        <span class="badge badge-secondary">Updated {{ task.getUpdatedAt|date("d/m/Y") }}</span>
                     </div>
 
                     <div>
