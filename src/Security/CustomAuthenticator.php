@@ -26,13 +26,18 @@ class CustomAuthenticator extends AbstractFormLoginAuthenticator implements Pass
 
     public const LOGIN_ROUTE = 'app_login';
 
-    private $defaultPostLoginRoute = 'app_tasks_index';
+    private const POST_LOGIN_ROUTE = 'app_tasks_index';
     private $entityManager;
     private $urlGenerator;
     private $csrfTokenManager;
     private $passwordEncoder;
 
-    public function __construct(EntityManagerInterface $entityManager, UrlGeneratorInterface $urlGenerator, CsrfTokenManagerInterface $csrfTokenManager, UserPasswordEncoderInterface $passwordEncoder)
+    public function __construct(
+        EntityManagerInterface $entityManager, 
+        UrlGeneratorInterface $urlGenerator, 
+        CsrfTokenManagerInterface $csrfTokenManager, 
+        UserPasswordEncoderInterface $passwordEncoder
+    )
     {
         $this->entityManager = $entityManager;
         $this->urlGenerator = $urlGenerator;
@@ -90,7 +95,7 @@ class CustomAuthenticator extends AbstractFormLoginAuthenticator implements Pass
     {
         return $credentials['password'];
     }
-
+    
     public function onAuthenticationSuccess(Request $request, TokenInterface $token, $providerKey)
     {
         // if ($targetPath = $this->getTargetPath($request->getSession(), $providerKey)) {
@@ -99,7 +104,7 @@ class CustomAuthenticator extends AbstractFormLoginAuthenticator implements Pass
 
         // For example : return new RedirectResponse($this->urlGenerator->generate('some_route'));
         // throw new \Exception('TODO: provide a valid redirect inside '.__FILE__);
-        return new RedirectResponse($this->urlGenerator->generate($this->defaultPostLoginRoute));
+        return new RedirectResponse($this->urlGenerator->generate(self::POST_LOGIN_ROUTE));
     }
 
     protected function getLoginUrl()

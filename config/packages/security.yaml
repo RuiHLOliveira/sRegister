@@ -14,6 +14,11 @@ security:
         dev:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
             security: false
+        api:
+            pattern: ^/api
+            guard:
+                authenticators:
+                    - App\Security\JwtAuthenticator
         main:
             anonymous: true
             lazy: true
@@ -27,11 +32,7 @@ security:
                 path: app_logout
                 # where to redirect after logout
                 # target: app_any_route
-        # api:
-        #     pattern: ^/api
-        #     guard:
-        #         authenticators:
-        #             - App\Security\JwtAuthenticator
+        
 
 
             # activate different ways to authenticate
