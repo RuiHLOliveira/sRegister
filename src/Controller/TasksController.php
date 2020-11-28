@@ -133,12 +133,16 @@ class TasksController extends AbstractController
                 'user' => $user
                 ],['created_at' => 'DESC'] //orderBy
             );
-            
+
+            $situations = $this->getDoctrine()->getRepository(Situation::class)
+                ->findBy(['user' => [$user, null]],['user' => 'asc']
+            );
+
             return $this->render('task/edit.html.twig', [
                 'title' => 'Edit Task',
                 'subtitle' => 'edit your task',
                 'task' => $task,
-                // 'situations' => $situations,
+                'situations' => $situations,
                 'projects' => $projects
             ]);
         } catch (NotFoundHttpException $e) {
@@ -193,10 +197,13 @@ class TasksController extends AbstractController
                 }
                 $task->setProject($project);
             }
-
+            dump($postData->get('targetSituation'));
             if(!empty($postData->get('targetSituation'))) {
                 $situation = $this->getDoctrine()->getRepository(Situation::class)
-                    ->findOneBy(['id' => $postData->get('targetSituation')]);
+                    ->findOneBy([
+                        'id' => $postData->get('targetSituation'),
+                        'user' => [$user, null]
+                    ]);
                 if($situation == null){
                     $this->createNotFoundException('Desired situation not found');
                 }

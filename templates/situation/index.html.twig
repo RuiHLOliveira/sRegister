@@ -1,0 +1,73 @@
+{% extends "base.html.twig" %}
+
+{# DEFINES TITLE #}
+{% block title %}
+    {{ title }}
+{% endblock %}
+
+{# DEFINES SIDE TITLE BUTTONS #}
+{% block titleButtons %}
+    <a class="btn btn-sm btn-primary" href="{{ path('app_situations_create')}}">New</a>
+{% endblock %}
+
+{# DEFINES SUBTITLE #}
+{% block subtitle %}
+    {{ subtitle }}
+{% endblock %}
+
+{# DEFINES PAGE CONTENT #}
+{% block content %}
+
+    {% for message in app.flashes('success') %}
+        <div class="row">
+            <div class="col">
+                <div class="alert alert-success">
+                    {{ message }}
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+
+    {% for message in app.flashes('error') %}
+        <div class="row">
+            <div class="col">
+                <div class="alert alert-danger">
+                    {{ message }}
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+
+    {% for situation in situations %}
+        
+        <div class="row" style="margin-bottom: 20px;">
+            <div class="col">
+                <div class="cardModel">
+                
+                    <div class="mb-3">
+                        {{ situation.id }} - {{ situation.situation }}
+                        
+                        
+                    </div>
+
+                    <div class="">
+                        {% if situation.user is null %}
+                            <span style="font-size: 85%; color: #777">Can't edit a default situation</span>
+                        {% else %}
+                        <a class="btn btn-outline-success btn-sm" href="{{ path('app_situations_edit', {id:situation.id}) }}">Edit</a>
+                        <form class="d-inline" action="{{ path('app_situations_destroy', {id:situation.id}) }}" method="post">
+                            <input type="hidden" name="_method" value="DELETE">
+                            <button type="submit" class="btn btn-outline-danger btn-sm">Del</a>
+                        </form>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+    
+    {% if not situations %}
+        There isn't any situations
+    {% endif %}
+</div>
+{% endblock %}
