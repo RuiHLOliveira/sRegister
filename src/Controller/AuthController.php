@@ -9,12 +9,13 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 use App\Repository\UserRepository;
 use Firebase\JWT\JWT;
+use Symfony\Component\HttpFoundation\JsonResponse;
 
 class AuthController extends AbstractController
 {
 
     /**
-     * @Route("/auth/register", name="register", methods={"GET","POST"})
+     * @Route("/auth/register", name="register", methods={"GET","POST", "OPTIONS"})
      */
     public function register(Request $request, UserPasswordEncoderInterface $encoder)
     {
@@ -32,18 +33,16 @@ class AuthController extends AbstractController
     }
 
     /**
-     * @Route("/auth/login", name="login", methods={"GET","POST"})
+     * @Route("/auth/login", name="login", methods={"GET","POST", "OPTIONS"})
      */
     public function login(Request $request, UserRepository $userRepository, UserPasswordEncoderInterface $encoder)
     {
         $user = $userRepository->findOneBy([
-            'email'=>$request->get('email'),
+            'email' => $request->get('email'),
         ]);
-
+        
         if (!$user || !$encoder->isPasswordValid($user, $request->get('password'))) {
-            return $this->json([
-                'message' => 'email or password is wrong.',
-            ]);
+            return new JsonResponse(['message' => 'Email or password is wrong.'], 400);
         }
 
         $payload = [
@@ -51,12 +50,11 @@ class AuthController extends AbstractController
             "exp"  => (new \DateTime())->modify("+5 minutes")->getTimestamp(),
         ];
 
-
         $jwt = JWT::encode($payload, $this->getParameter('jwt_secret'), 'HS256');
-        return $this->json([
+        
+        return new JsonResponse([
             'message' => 'success!',
             'token' => sprintf('Bearer %s', $jwt),
         ]);
     }
-
 }

@@ -4,6 +4,8 @@ use App\Kernel;
 use Symfony\Component\Dotenv\Dotenv;
 use Symfony\Component\ErrorHandler\Debug;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
+use Symfony\Component\HttpFoundation\Response;
 
 require dirname(__DIR__).'/vendor/autoload.php';
 
@@ -24,7 +26,19 @@ if ($trustedHosts = $_SERVER['TRUSTED_HOSTS'] ?? false) {
 }
 
 $kernel = new Kernel($_SERVER['APP_ENV'], (bool) $_SERVER['APP_DEBUG']);
+
 $request = Request::createFromGlobals();
+
+
+if ($request->getContentType() == 'json') {
+    $data = json_decode($request->getContent(), true);
+    if (json_last_error() !== JSON_ERROR_NONE) {
+        throw new BadRequestHttpException('Invalid json body: ' . json_last_error_msg());
+    }
+    $request->request->replace(is_array($data) ? $data : array());
+}
+
 $response = $kernel->handle($request);
+
 $response->send();
 $kernel->terminate($request, $response);

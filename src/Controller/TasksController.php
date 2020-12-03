@@ -290,13 +290,13 @@ class TasksController extends AbstractController
 
             $title='Inbox';
             $subtitle='declutter your mind here';
-            return $this->render('task/index.html.twig',compact(
+            return $this->render('task/index.html.twig', compact(
                 'tasks', 'title', 'subtitle', 'situations'
             ));
 
         } catch (\Exception $e) {
             // Log::error($e->getMessage());
-            throw $e;
+            // throw $e;
             $this->addFlash('error', 'There was an error while getting your tasks.');
             return $this->redirectToRoute('app_tasks_create');
         }
