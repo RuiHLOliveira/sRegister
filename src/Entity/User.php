@@ -11,8 +11,20 @@ use Symfony\Component\Security\Core\User\UserInterface;
 /**
  * @ORM\Entity(repositoryClass=UserRepository::class)
  */
-class User implements UserInterface
+class User implements UserInterface, \JsonSerializable
 {
+
+    public function jsonSerialize()
+    {
+        $array = [
+            'id' => $this->getId(),
+            'projects' => $this->getProjects(),
+            'situations' => $this->getSituations(),
+            'username' => $this->getUsername(),
+        ];
+        return $array;
+    }
+
     /**
      * @ORM\Id()
      * @ORM\GeneratedValue()

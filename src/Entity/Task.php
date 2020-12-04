@@ -4,12 +4,29 @@ namespace App\Entity;
 
 use App\Repository\TaskRepository;
 use Doctrine\ORM\Mapping as ORM;
-
 /**
  * @ORM\Entity(repositoryClass=TaskRepository::class)
  */
-class Task
+class Task implements \JsonSerializable
 {
+
+    public function jsonSerialize()
+    {
+        $array = [
+            'id' => $this->getId(),
+            'name' => $this->getName(),
+            'description' => $this->getDescription(),
+            'duedate' => $this->getDuedate(),
+            'completed' => $this->getCompleted(),
+            'user' => $this->getUser(),
+            'situation' => $this->getSituation(),
+            'createdat' => $this->getCreatedAt(),
+            'updatedat' => $this->getUpdatedAt(),
+            'project' => $this->getProject(),
+        ];
+        return $array;
+    }
+
     /**
      * @ORM\Id()
      * @ORM\GeneratedValue()
