@@ -164,8 +164,12 @@ class ApiTasksController extends AbstractController
     public function update(Request $request, $id)
     {
         try {
-            
             $postData = $request->request;
+            $duedate = $postData->get('duedate');
+            if(is_array($duedate)){
+                $duedate = substr($duedate['date'],0,10);
+                $postData->set('duedate', $duedate);
+            }
             //validating
             if($postData->get('name') === null || $postData->get('name') === ''){
                 throw new ValidationException('Name is needed');
@@ -181,8 +185,10 @@ class ApiTasksController extends AbstractController
             if($task == null){
                 $this->createNotFoundException('Task not found');
             }
+
             $considerProjectForm = $postData->get('considerProjectForm');
             $projectFromRequest = $postData->get('project');
+
             if(isset($considerProjectForm)
                 && $considerProjectForm == 1
                 && isset($projectFromRequest)
@@ -198,7 +204,7 @@ class ApiTasksController extends AbstractController
                 }
                 $task->setProject($project);
             }
-            dump($postData->get('targetSituation'));
+            
             if(!empty($postData->get('targetSituation'))) {
                 $situation = $this->getDoctrine()->getRepository(Situation::class)
                     ->findOneBy([
@@ -222,16 +228,23 @@ class ApiTasksController extends AbstractController
             $entityManager = $this->getDoctrine()->getManager();
             $entityManager->persist($task);
             $entityManager->flush();
-            
-            return $this->redirectToRoute('app_tasks_index');
+
+            $message = "Task edited successfully";
+            return new JsonResponse(compact(
+                'message'
+            ));
+            // return $this->redirectToRoute('app_tasks_index');
         } catch (ValidationException $e) {
-            $this->addFlash('error', $e->getMessage());
-            return $this->redirectToRoute('app_tasks_edit',['id'=>$id]);
+            return new JsonResponse($e->getMessage(), 500);
+            // $this->addFlash('error', $e->getMessage());
+            // return $this->redirectToRoute('app_tasks_edit',['id'=>$id]);
         } catch (NotFoundHttpException $e) {
+            return new JsonResponse($e->getMessage(), 500);
             $this->addFlash('error', $e->getMessage());
             return $this->redirectToRoute('app_tasks_edit',['id'=>$id]);
         } catch (\Exception $e) {
             // Log::error($e->getMessage());
+            return new JsonResponse($e->getMessage(), 500);
             throw $e;
             $this->addFlash('error','There was an error while updating your task.');
             return $this->redirectToRoute('app_tasks_edit',['id'=>$id]);
