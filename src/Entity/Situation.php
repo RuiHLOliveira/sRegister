@@ -10,8 +10,19 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * @ORM\Entity(repositoryClass=SituationRepository::class)
  */
-class Situation
+class Situation implements \JsonSerializable
 {
+
+    public function jsonSerialize()
+    {
+        $array = [
+            'id' => $this->getId(),
+            'situation' => $this->getSituation(),
+            'user' => $this->getUser()
+        ];
+        return $array;
+    }
+
     /**
      * @ORM\Id()
      * @ORM\GeneratedValue()
