@@ -16,7 +16,8 @@ class Task implements \JsonSerializable
             'id' => $this->getId(),
             'name' => $this->getName(),
             'description' => $this->getDescription(),
-            'duedate' => $this->getDuedate(),
+            'duedate' => $this->getDate(),
+            'readableDuedate' => $this->getReadableDate(),
             'completed' => $this->getCompleted(),
             'user' => $this->getUser(),
             'situation' => $this->getSituation(),
@@ -92,7 +93,7 @@ class Task implements \JsonSerializable
         if(is_null($this->duedate)) return null;
         $date = $this->duedate;
         // $dateObject = \DateTime::createFromFormat('Y-m-d H:i:s',$date);
-        $duedateReadable = $date->format('D, d M Y');// H:i:s
+        $duedateReadable = $date->format('l, m/d/Y');// H:i:s
         return $duedateReadable;
     }
 
