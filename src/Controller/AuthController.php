@@ -47,14 +47,63 @@ class AuthController extends AbstractController
 
         $payload = [
             "user" => $user->getUsername(),
-            "exp"  => (new \DateTime())->modify("+15 minutes")->getTimestamp(),
+            "exp"  => (new \DateTime())->modify("+1 minutes")->getTimestamp(),
+        ];
+
+        $payloadRefresh = [
+            "user" => $user->getUsername(),
+            "exp"  => (new \DateTime())->modify("+24 hours")->getTimestamp(),
         ];
 
         $jwt = JWT::encode($payload, $this->getParameter('jwt_secret'), 'HS256');
+        $jwtRefresh = JWT::encode($payloadRefresh, $this->getParameter('jwt_secret'), 'HS256');
         
         return new JsonResponse([
             'message' => 'success!',
             'token' => sprintf('Bearer %s', $jwt),
+            'refresh_token' => sprintf('Bearer %s', $jwtRefresh),
         ]);
+    }
+
+    /**
+     * @Route("/auth/refreshToken", name="refreshToken", methods={"GET","POST", "OPTIONS"})
+     */
+    public function refreshToken(Request $request, UserRepository $userRepository, UserPasswordEncoderInterface $encoder)
+    {
+        $credentials = $request->get('refresh_token');
+        $credentials = str_replace('Bearer ', '', $credentials);
+
+        $jwt = (array) JWT::decode(
+            $credentials,
+            $this->getParameter('jwt_secret'),
+            ['HS256']
+        );
+
+        $user = $userRepository->findOneBy([
+            'email' => $jwt['user'],
+        ]);
+
+        if (!$user ) {
+            return new JsonResponse(['message' => 'Email or password is wrong.'], 400);
+        }
+
+        $payload = [
+            "user" => $user->getUsername(),
+            "exp"  => (new \DateTime())->modify("+1 minutes")->getTimestamp(),
+        ];
+
+        $payloadRefresh = [
+            "user" => $user->getUsername(),
+            "exp"  => (new \DateTime())->modify("+24 hours")->getTimestamp(),
+        ];
+
+        $jwt = JWT::encode($payload, $this->getParameter('jwt_secret'), 'HS256');
+        $jwtRefresh = JWT::encode($payloadRefresh, $this->getParameter('jwt_secret'), 'HS256');
+        
+        return new JsonResponse([
+            'message' => 'success!',
+            'token' => sprintf('Bearer %s', $jwt),
+            'refresh_token' => sprintf('Bearer %s', $jwtRefresh),
+        ],JsonResponse::HTTP_OK);
     }
 }
