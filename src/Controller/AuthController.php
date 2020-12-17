@@ -47,7 +47,7 @@ class AuthController extends AbstractController
 
         $payload = [
             "user" => $user->getUsername(),
-            "exp"  => (new \DateTime())->modify("+1 minutes")->getTimestamp(),
+            "exp"  => (new \DateTime())->modify("+15 minutes")->getTimestamp(),
         ];
 
         $payloadRefresh = [
@@ -55,6 +55,7 @@ class AuthController extends AbstractController
             "exp"  => (new \DateTime())->modify("+24 hours")->getTimestamp(),
         ];
 
+        //salvar o token no banco para poder ver se é valido e invalidar ao gerar um novo
         $jwt = JWT::encode($payload, $this->getParameter('jwt_secret'), 'HS256');
         $jwtRefresh = JWT::encode($payloadRefresh, $this->getParameter('jwt_secret'), 'HS256');
         
