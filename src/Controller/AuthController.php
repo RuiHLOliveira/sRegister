@@ -13,6 +13,8 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 
 class AuthController extends AbstractController
 {
+    private $authExpirationTime =  1 * 60 . ' seconds';
+    private $refreshExpirationTime = 24 * 60 * 60 . ' seconds';
 
     /**
      * @Route("/auth/register", name="register", methods={"GET","POST", "OPTIONS"})
@@ -47,18 +49,20 @@ class AuthController extends AbstractController
 
         $payload = [
             "user" => $user->getUsername(),
-            "exp"  => (new \DateTime())->modify("+15 minutes")->getTimestamp(),
+            "exp"  => (new \DateTime())->modify($this->authExpirationTime)->getTimestamp(),
         ];
 
         $payloadRefresh = [
             "user" => $user->getUsername(),
-            "exp"  => (new \DateTime())->modify("+24 hours")->getTimestamp(),
+            "exp"  => (new \DateTime())->modify($this->refreshExpirationTime)->getTimestamp(),
         ];
 
-        //salvar o token no banco para poder ver se é valido e invalidar ao gerar um novo
         $jwt = JWT::encode($payload, $this->getParameter('jwt_secret'), 'HS256');
         $jwtRefresh = JWT::encode($payloadRefresh, $this->getParameter('jwt_secret'), 'HS256');
         
+        //salvar o token no banco para poder ver se é valido e invalidar ao gerar um novo
+        // ou para o usuario manualmente invalidar se necessário
+
         return new JsonResponse([
             'message' => 'success!',
             'token' => sprintf('Bearer %s', $jwt),
@@ -74,11 +78,17 @@ class AuthController extends AbstractController
         $credentials = $request->get('refresh_token');
         $credentials = str_replace('Bearer ', '', $credentials);
 
-        $jwt = (array) JWT::decode(
-            $credentials,
-            $this->getParameter('jwt_secret'),
-            ['HS256']
-        );
+        try {
+            $jwt = (array) JWT::decode(
+                $credentials,
+                $this->getParameter('jwt_secret'),
+                ['HS256']
+            );
+        } catch (\Exception $e) {
+            return new JsonResponse([
+                'message' => $e->getMessage(),
+            ],JsonResponse::HTTP_INTERNAL_SERVER_ERROR);
+        }
 
         $user = $userRepository->findOneBy([
             'email' => $jwt['user'],
@@ -88,19 +98,26 @@ class AuthController extends AbstractController
             return new JsonResponse(['message' => 'Email or password is wrong.'], 400);
         }
 
+        // checar no banco na table de usuarios acessos
+        // se esse token existe para esse usuario
+        // e se ele está válido
+
+        // cria um novo refreshtoken com a mesma data de expiração
         $payload = [
             "user" => $user->getUsername(),
-            "exp"  => (new \DateTime())->modify("+1 minutes")->getTimestamp(),
+            "exp"  => (new \DateTime())->modify($this->authExpirationTime)->getTimestamp(),
         ];
 
         $payloadRefresh = [
             "user" => $user->getUsername(),
-            "exp"  => (new \DateTime())->modify("+24 hours")->getTimestamp(),
+            "exp"  => $jwt['exp'],
         ];
 
         $jwt = JWT::encode($payload, $this->getParameter('jwt_secret'), 'HS256');
         $jwtRefresh = JWT::encode($payloadRefresh, $this->getParameter('jwt_secret'), 'HS256');
         
+        //atualizar a table de usuarios acessos, mudando o token.
+
         return new JsonResponse([
             'message' => 'success!',
             'token' => sprintf('Bearer %s', $jwt),
