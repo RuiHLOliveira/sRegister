@@ -10,8 +10,25 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * @ORM\Entity(repositoryClass=ProjectRepository::class)
  */
-class Project
+class Project implements \JsonSerializable
 {
+    public function jsonSerialize()
+    {
+        $array = [
+            'id' => $this->getId(),
+            'name' => $this->getName(),
+            'description' => $this->getDescription(),
+            'duedate' => $this->getDate(),
+            'readableDuedate' => $this->getReadableDate(),
+            'completed' => $this->getCompleted(),
+            'user' => $this->getUser(),
+            'createdat' => $this->getCreatedAt(),
+            'updatedat' => $this->getUpdatedAt(),
+            // 'tasks' => $this->getTasks()
+        ];
+        return $array;
+    }
+
     /**
      * @ORM\Id()
      * @ORM\GeneratedValue()

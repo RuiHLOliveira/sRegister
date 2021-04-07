@@ -68,12 +68,30 @@ class User implements UserInterface, \JsonSerializable
      */
     private $invitationTokens;
 
+    /**
+     * @ORM\OneToMany(targetEntity=UserAccess::class, mappedBy="user", orphanRemoval=true)
+     */
+    private $userAccesses;
+
+    /**
+     * @ORM\OneToMany(targetEntity=Notebook::class, mappedBy="user")
+     */
+    private $notebooks;
+
+    /**
+     * @ORM\OneToMany(targetEntity=Note::class, mappedBy="user")
+     */
+    private $notes;
+
     public function __construct()
     {
         $this->tasks = new ArrayCollection();
         $this->situations = new ArrayCollection();
         $this->projects = new ArrayCollection();
         $this->invitationTokens = new ArrayCollection();
+        $this->userAccesses = new ArrayCollection();
+        $this->notebooks = new ArrayCollection();
+        $this->notes = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -272,6 +290,96 @@ class User implements UserInterface, \JsonSerializable
             // set the owning side to null (unless already changed)
             if ($invitationToken->getUser() === $this) {
                 $invitationToken->setUser(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|UserAccess[]
+     */
+    public function getUserAccesses(): Collection
+    {
+        return $this->userAccesses;
+    }
+
+    public function addUserAccess(UserAccess $userAccess): self
+    {
+        if (!$this->userAccesses->contains($userAccess)) {
+            $this->userAccesses[] = $userAccess;
+            $userAccess->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeUserAccess(UserAccess $userAccess): self
+    {
+        if ($this->userAccesses->removeElement($userAccess)) {
+            // set the owning side to null (unless already changed)
+            if ($userAccess->getUser() === $this) {
+                $userAccess->setUser(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|Notebook[]
+     */
+    public function getNotebooks(): Collection
+    {
+        return $this->notebooks;
+    }
+
+    public function addNotebook(Notebook $notebook): self
+    {
+        if (!$this->notebooks->contains($notebook)) {
+            $this->notebooks[] = $notebook;
+            $notebook->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeNotebook(Notebook $notebook): self
+    {
+        if ($this->notebooks->removeElement($notebook)) {
+            // set the owning side to null (unless already changed)
+            if ($notebook->getUser() === $this) {
+                $notebook->setUser(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|Note[]
+     */
+    public function getNotes(): Collection
+    {
+        return $this->notes;
+    }
+
+    public function addNote(Note $note): self
+    {
+        if (!$this->notes->contains($note)) {
+            $this->notes[] = $note;
+            $note->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeNote(Note $note): self
+    {
+        if ($this->notes->removeElement($note)) {
+            // set the owning side to null (unless already changed)
+            if ($note->getUser() === $this) {
+                $note->setUser(null);
             }
         }
 

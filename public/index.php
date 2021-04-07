@@ -29,15 +29,6 @@ $kernel = new Kernel($_SERVER['APP_ENV'], (bool) $_SERVER['APP_DEBUG']);
 
 $request = Request::createFromGlobals();
 
-
-if ($request->getContentType() == 'json') {
-    $data = json_decode($request->getContent(), true);
-    if (json_last_error() !== JSON_ERROR_NONE) {
-        throw new BadRequestHttpException('Invalid json body: ' . json_last_error_msg());
-    }
-    $request->request->replace(is_array($data) ? $data : array());
-}
-
 $response = $kernel->handle($request);
 
 $response->send();
