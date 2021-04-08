@@ -19,6 +19,7 @@ class Note implements \JsonSerializable
             'user' => $this->getUser(),
             'created_at' => $this->getCreatedAt(),
             'updated_at' => $this->getUpdatedAt(),
+            'notebook' => $this->getNotebook()
         ];
         return $array;
     }

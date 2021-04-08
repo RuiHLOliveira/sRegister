@@ -112,14 +112,14 @@ class ApiNoteController extends AbstractController
     public function update(Request $request, $notebook, $id)
     {
         try {
-            $postData = $request->request;
+            $postData = json_decode($request->getContent(),true);
 
             //validating
-            if($postData->get('name') === null || $postData->get('name') === ''){
+            if($postData['name'] === null || $postData['name'] === ''){
                 throw new ValidationException('Name is needed');
             }
             //validating
-            if($postData->get('content') === null){
+            if($postData['content'] === null){
                 throw new ValidationException('Content is needed');
             }
 
@@ -146,8 +146,8 @@ class ApiNoteController extends AbstractController
                 $this->createNotFoundException('Note not found');
             }
 
-            $note->setName($postData->get('name'));
-            $note->setContent($postData->get('content'));
+            $note->setName($postData['name']);
+            $note->setContent($postData['content']);
 
             $entityManager = $this->getDoctrine()->getManager();
             $entityManager->persist($note);
