@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use \Exception;
 use App\Entity\Note;
+use DateTimeImmutable;
 use App\Entity\Notebook;
 use App\Entity\Situation;
 use App\Exception\ValidationException;
@@ -21,16 +22,18 @@ class ApiNoteController extends AbstractController
     public function store(Request $request, $notebook)
     {
         try {
-            $postData = $request->request;
+            $postData = json_decode($request->getContent(),true);
 
-            if($postData->get('name') === null || $postData->get('name') === ''){
-                throw new ValidationException('Name is needed');
+            if($postData['content'] === null || $postData['content'] === ''){
+                throw new ValidationException('Content is needed');
             }
 
             $note = new Note();
-            $note->setName($postData->get('name'));
-            $note->setContent($postData->get('content'));
+            $note->setName(isset($postData['name']) && $postData['name'] != null ? $postData['name'] : '');
+            $note->setContent($postData['content']);
             $note->setUser($this->getUser());
+            $note->setCreatedAt(new DateTimeImmutable());
+            $note->setUpdatedAt(new DateTimeImmutable());
 
             $notebook = $this->getDoctrine()->getRepository(Notebook::class)
                 ->findOneBy([
@@ -57,12 +60,12 @@ class ApiNoteController extends AbstractController
             return new JsonResponse(compact('note'), 201);
         } catch (ValidationException $e) {
             // Log::error($e->getMessage());
-            throw $e;
+            // throw $e;
             $message = $e->getMessage();
             return new JsonResponse(compact('message'), 400);
         } catch (Exception $e) {
             // Log::error($e->getMessage());
-            throw $e;
+            // throw $e;
             $message = $e->getMessage(); // or There was an error while storing your note.
             return new JsonResponse(compact('message'), 500);
         }
@@ -148,7 +151,8 @@ class ApiNoteController extends AbstractController
 
             $note->setName($postData['name']);
             $note->setContent($postData['content']);
-
+            $note->setUpdatedAt(new DateTimeImmutable());
+            
             $entityManager = $this->getDoctrine()->getManager();
             $entityManager->persist($note);
             $entityManager->flush();
