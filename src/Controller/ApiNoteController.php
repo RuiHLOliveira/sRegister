@@ -7,11 +7,13 @@ use App\Entity\Note;
 use DateTimeImmutable;
 use App\Entity\Notebook;
 use App\Entity\Situation;
+use App\Exception\InternalServerErrorHttpException;
 use App\Exception\ValidationException;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class ApiNoteController extends AbstractController
@@ -24,8 +26,8 @@ class ApiNoteController extends AbstractController
         try {
             $postData = json_decode($request->getContent(),true);
 
-            if($postData['content'] === null || $postData['content'] === ''){
-                throw new ValidationException('Content is needed');
+            if(!isset($postData['content']) || $postData['content'] === null || $postData['content'] === ''){
+                throw new BadRequestHttpException('Content is needed');
             }
 
             $note = new Note();
@@ -42,7 +44,7 @@ class ApiNoteController extends AbstractController
             ]);
 
             if($notebook == null){
-                $this->createNotFoundException("Notebook not found");
+                throw new NotFoundHttpException("Notebook not found");
             }
 
             $note->setNotebook($notebook);
@@ -58,54 +60,8 @@ class ApiNoteController extends AbstractController
             ]);
 
             return new JsonResponse(compact('note'), 201);
-        } catch (ValidationException $e) {
-            // Log::error($e->getMessage());
-            // throw $e;
-            $message = $e->getMessage();
-            return new JsonResponse(compact('message'), 400);
         } catch (Exception $e) {
-            // Log::error($e->getMessage());
-            // throw $e;
-            $message = $e->getMessage(); // or There was an error while storing your note.
-            return new JsonResponse(compact('message'), 500);
-        }
-    }
-
-    /**
-     * @Route("/api/{notebook}/notes/{id}", methods={"GET","HEAD"})
-     */
-    public function show($id, $notebook)
-    {
-        try {
-            $user = $this->getUser();
-
-            $notebook = $this->getDoctrine()->getRepository(Notebook::class)
-                ->findOneBy([
-                'user' => $this->getUser(),
-                'id' => $notebook
-            ]);
-
-            if($notebook == null){
-                $this->createNotFoundException("Notebook not found");
-            }
-
-            $note = $this->getDoctrine()->getRepository(Note::class)
-                ->findOneBy(['id' => $id, '' => $notebook, 'user' => $user]);
-
-            if($note == null){
-                $this->createNotFoundException("Note not found");
-            }
-            
-            return new JsonResponse(compact('note'));
-        } catch (NotFoundHttpException $e) {
-            throw $e;
-            $message = "Note not found";
-            return new JsonResponse(compact('message'), 404);
-        } catch (\Exception $e) {
-            // Log::error($e->getMessage());
-            throw $e;
-            $message = $e->getMessage(); // or There was an error in your note.
-            return new JsonResponse(compact('message'), 500);
+            throw new InternalServerErrorHttpException($e->getMessage());
         }
     }
 
@@ -118,12 +74,8 @@ class ApiNoteController extends AbstractController
             $postData = json_decode($request->getContent(),true);
 
             //validating
-            if($postData['name'] === null || $postData['name'] === ''){
-                throw new ValidationException('Name is needed');
-            }
-            //validating
             if($postData['content'] === null){
-                throw new ValidationException('Content is needed');
+                throw new BadRequestHttpException('Content is needed');
             }
 
             $notebook = $this->getDoctrine()->getRepository(Notebook::class)
@@ -133,7 +85,7 @@ class ApiNoteController extends AbstractController
             ]);
 
             if($notebook == null){
-                $this->createNotFoundException("Notebook not found");
+                throw new NotFoundHttpException("Notebook not found");
             }
 
             $user = $this->getUser();
@@ -146,10 +98,10 @@ class ApiNoteController extends AbstractController
                 ]);
 
             if($note == null){
-                $this->createNotFoundException('Note not found');
+                throw new NotFoundHttpException('Note not found');
             }
 
-            $note->setName($postData['name']);
+            $note->setName(isset($postData['name']) && $postData['name'] != null ? $postData['name'] : '');
             $note->setContent($postData['content']);
             $note->setUpdatedAt(new DateTimeImmutable());
             
@@ -159,19 +111,9 @@ class ApiNoteController extends AbstractController
 
             $message = "Note edited successfully";
             return new JsonResponse(compact('message'));
-        } catch (ValidationException $e) {
-            throw $e;
-            $message = $e->getMessage();
-            return new JsonResponse(compact('message'), 500);
-        } catch (NotFoundHttpException $e) {
-            throw $e;
-            $message = $e->getMessage();
-            return new JsonResponse(compact('message'), 500);
         } catch (\Exception $e) {
             // Log::error($e->getMessage());
-            throw $e;
-            $message = $e->getMessage(); // or There was an error while updating your note.
-            return new JsonResponse(compact('message'), 500);
+            throw new InternalServerErrorHttpException($e->getMessage());
         }
     }
 
@@ -189,7 +131,7 @@ class ApiNoteController extends AbstractController
             ]);
 
             if($notebook == null){
-                $this->createNotFoundException("Notebook not found");
+                throw new NotFoundHttpException("Notebook not found");
             }
 
             $note = $this->getDoctrine()->getRepository(Note::class)
@@ -200,7 +142,7 @@ class ApiNoteController extends AbstractController
                 ]);
 
             if (!$note) {
-                throw $this->createNotFoundException('Note not found');
+                throw new NotFoundHttpException('Note not found');
             }
 
             $entityManager = $this->getDoctrine()->getManager();
@@ -209,17 +151,9 @@ class ApiNoteController extends AbstractController
 
             $message = "Note deleted successfully";
             return new JsonResponse(compact('message'));
-            // return $this->redirectToRoute('app_notes_index');
-        } catch (ValidationException $e) {
-            $message = $e->getMessage();
-            return new JsonResponse(compact('message'), 500);
-        } catch (NotFoundHttpException $e) {
-            $message = $e->getMessage();
-            return new JsonResponse(compact('message'), 500);
         } catch (\Exception $e) {
             // Log::error($e->getMessage());
-            $message = $e->getMessage(); // or There was an error while updating your note.
-            return new JsonResponse(compact('message'), 500);
+            throw new InternalServerErrorHttpException($e->getMessage());
         }
     }
 
@@ -237,7 +171,7 @@ class ApiNoteController extends AbstractController
             ]);
 
             if($notebook == null){
-                $this->createNotFoundException("Notebook not found");
+                throw new NotFoundHttpException("Notebook not found");
             }
 
             $notes = $this->getDoctrine()
@@ -251,17 +185,43 @@ class ApiNoteController extends AbstractController
             $situations = $this->getDoctrine()->getRepository(Situation::class)
                 ->findAll();
 
-            $title='Inbox';
-            $subtitle='declutter your mind here';
-
             return new JsonResponse(compact('notes'));
-            
         } catch (\Exception $e) {
             // Log::error($e->getMessage());
-            // throw $e;
-            throw $e;
-            $message = $e->getMessage();
-            return new JsonResponse(compact('message'), 500);
+            throw new InternalServerErrorHttpException($e->getMessage());
+        }
+    }
+
+    
+    /**
+     * @Route("/api/{notebook}/notes/{id}", methods={"GET","HEAD"})
+     */
+    public function show($id, $notebook)
+    {
+        try {
+            $user = $this->getUser();
+
+            $notebook = $this->getDoctrine()->getRepository(Notebook::class)
+                ->findOneBy([
+                'user' => $this->getUser(),
+                'id' => $notebook
+            ]);
+
+            if($notebook == null){
+                throw new NotFoundHttpException("Notebook not found");
+            }
+
+            $note = $this->getDoctrine()->getRepository(Note::class)
+                ->findOneBy(['id' => $id, '' => $notebook, 'user' => $user]);
+
+            if($note == null){
+                throw new NotFoundHttpException("Note not found");
+            }
+            
+            return new JsonResponse(compact('note'));
+        } catch (\Exception $e) {
+            // Log::error($e->getMessage());
+            throw new InternalServerErrorHttpException($e->getMessage());
         }
     }
 }
