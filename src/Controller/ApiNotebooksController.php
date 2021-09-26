@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\Notebook;
 use App\Exception\ValidationException;
 use DateTimeImmutable;
+use Monolog\Logger;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -19,6 +20,7 @@ class ApiNotebooksController extends AbstractController
     public function index()
     {
         try {
+            //pegando o usuario que está autenticado
             $user = $this->getUser();
 
             $notebooks = $this->getDoctrine()

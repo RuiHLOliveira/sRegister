@@ -182,8 +182,8 @@ class ApiNoteController extends AbstractController
                 ],['created_at' => 'DESC'] //orderBy
             );
 
-            $situations = $this->getDoctrine()->getRepository(Situation::class)
-                ->findAll();
+//            $situations = $this->getDoctrine()->getRepository(Situation::class)
+//                ->findAll();
 
             return new JsonResponse(compact('notes'));
         } catch (\Exception $e) {
