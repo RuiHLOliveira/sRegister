@@ -12,6 +12,9 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class Notebook implements \JsonSerializable
 {
+
+    public $fullSerialize = false;
+
     public function jsonSerialize()
     {
         $array = [
@@ -21,7 +24,21 @@ class Notebook implements \JsonSerializable
             'created_at' => $this->getCreatedAt(),
             'updated_at' => $this->getUpdatedAt(),
         ];
+
+        if($this->fullSerialize == true){
+            $array['notes'] = $this->unpackNotesToArray($this->getNotes());
+        }
         return $array;
+    }
+
+    private function unpackNotesToArray($notesCollection){
+        $notes = $notesCollection->toArray();
+        foreach ($notes as $key => $note) {
+            $note->setUser(null);
+            $note->setNotebook(null);
+            $notes[$key] = $note;
+        }
+        return $notes;
     }
 
     /**

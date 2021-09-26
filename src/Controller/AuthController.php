@@ -44,6 +44,13 @@ class AuthController extends AbstractController
     public function logout(Request $request, UserRepository $userRepository, UserPasswordEncoderInterface $encoder)
     {
         $requestData = json_decode($request->getContent());
+        if(!property_exists($requestData, 'token')){
+            return new JsonResponse(['message' => 'Token not sent'], 500);
+        }
+        if(!property_exists($requestData, 'refresh_token')){
+            return new JsonResponse(['message' => 'Refresh Token not sent'], 500);
+        }
+
         $refreshToken = $requestData->refresh_token;
         $refreshToken = str_replace('Bearer ', '', $refreshToken);
 
@@ -155,6 +162,13 @@ class AuthController extends AbstractController
     public function refreshToken(Request $request, UserRepository $userRepository, UserPasswordEncoderInterface $encoder)
     {
         $requestData = json_decode($request->getContent());
+        if(!property_exists($requestData, 'token')){
+            return new JsonResponse(['message' => 'Token not sent'], 400);
+        }
+        if(!property_exists($requestData, 'refresh_token')){
+            return new JsonResponse(['message' => 'Refresh Token not sent'], 400);
+        }
+
         $refreshToken = $requestData->refresh_token;
         $refreshToken = str_replace('Bearer ', '', $refreshToken);
 
