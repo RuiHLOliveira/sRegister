@@ -9,7 +9,7 @@ use PHPUnit\Framework\TestCase;
 use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Psr7\Request;
 
-class MyTest extends DefaultTestCase //extends TestCase
+class LoginTest extends DefaultTestCase //extends TestCase
 {
     public function testCannotLogin()
     {
@@ -31,19 +31,5 @@ class MyTest extends DefaultTestCase //extends TestCase
         $responseBody = $response->getBody();
         $responseData = json_decode((string) $responseBody);
         $this->assertEquals($responseData->message, "success!");
-    }
-
-    public function testCannotListNotebooks()
-    {
-        $this->expectException(ClientException::class);
-        $response = self::get('/api/notebooks');
-        $this->assertEquals(401, $response->getStatusCode());
-    }
-
-    public function testCanListNotebooks()
-    {
-        self::needsLogin();
-        $response = self::get('/api/notebooks');
-        $this->assertEquals(200, $response->getStatusCode());
     }
 }

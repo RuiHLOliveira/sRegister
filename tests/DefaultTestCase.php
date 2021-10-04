@@ -6,7 +6,7 @@ use GuzzleHttp\Client;
 use GuzzleHttp\Psr7\Request;
 use PHPUnit\Framework\TestCase;
 
-class DefaultTestCase extends TestCase
+abstract class DefaultTestCase extends TestCase
 {
     const json = 'json';
     const form = 'form';
