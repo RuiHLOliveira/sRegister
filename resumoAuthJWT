@@ -1,0 +1,21 @@
+https://smoqadam.me/posts/how-to-authenticate-user-in-symfony-5-by-jwt/
+
+User tem getSalt e eraseCredentials
+
+Criei AuthController
+
+Adicionei o encoder bcrypt no security.yml, para ser passado automaticamente no controller.
+
+Adicionei o jwt_secret no services.yml
+
+O AuthController:login faz:
+$encoder->isPasswordValid
+define payload com expiration time
+converte payload em jwt e retorna.
+
+Implementei o JWTAuthenticator extends AbstractGuardAuthenticator
+com alguns métodos de um GuardAuthenticator para validar os dados de acordo com o JWT
+
+Setei esse Authenticator como o Authenticator do pattern /api no security.yml firewalls.
+
+Qualquer controller que use o prefixo /api necessita de autenticação.

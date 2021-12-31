@@ -31,5 +31,8 @@ class LoginTest extends DefaultTestCase //extends TestCase
         $responseBody = $response->getBody();
         $responseData = json_decode((string) $responseBody);
         $this->assertEquals($responseData->message, "success!");
+        $this->assertEquals(property_exists($responseData, 'token'), true);
+        $this->assertNotEquals($responseData->token, null);
+        $this->assertNotEquals($responseData->token, '');
     }
 }

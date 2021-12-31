@@ -38,6 +38,29 @@ class ApiNotebooksController extends AbstractController
     }
 
     /**
+     * @Route("/api/notebooks/{id}", methods={"GET","HEAD"})
+     */
+    public function getone($id)
+    {
+        try {
+            //pegando o usuario que está autenticado
+            $user = $this->getUser();
+
+            $notebook = $this->getDoctrine()
+            ->getRepository(Notebook::class)
+            ->findOneBy(['id'=>$id, 'user' => $user]);
+
+            return new JsonResponse(compact('notebook'));
+
+        } catch (\Exception $e) {
+            // Log::error($e->getMessage());
+            // throw $e;
+            $message = $e->getMessage();
+            return new JsonResponse(compact('message'), 500);
+        }
+    }
+
+    /**
      * @Route("/api/notebooks", methods={"POST"})
      */
     public function store(Request $request)
