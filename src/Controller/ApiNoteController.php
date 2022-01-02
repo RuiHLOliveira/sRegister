@@ -60,8 +60,12 @@ class ApiNoteController extends AbstractController
             ]);
 
             return new JsonResponse(compact('note'), 201);
+        } catch (NotFoundHttpException $e) {
+            return new JsonResponse(['message' => $e->getMessage()], 404);
+        } catch (BadRequestHttpException $e) {
+            return new JsonResponse(['message' => $e->getMessage()], 400);
         } catch (Exception $e) {
-            throw new InternalServerErrorHttpException($e->getMessage());
+            return new JsonResponse(['message' => $e->getMessage()], 500);
         }
     }
 
@@ -111,9 +115,12 @@ class ApiNoteController extends AbstractController
 
             $message = "Note edited successfully";
             return new JsonResponse(compact('message'));
-        } catch (\Exception $e) {
-            // Log::error($e->getMessage());
-            throw new InternalServerErrorHttpException($e->getMessage());
+        } catch (NotFoundHttpException $e) {
+            return new JsonResponse(['message' => $e->getMessage()], 404);
+        } catch (BadRequestHttpException $e) {
+            return new JsonResponse(['message' => $e->getMessage()], 400);
+        } catch (Exception $e) {
+            return new JsonResponse(['message' => $e->getMessage()], 500);
         }
     }
 
@@ -151,9 +158,12 @@ class ApiNoteController extends AbstractController
 
             $message = "Note deleted successfully";
             return new JsonResponse(compact('message'));
-        } catch (\Exception $e) {
-            // Log::error($e->getMessage());
-            throw new InternalServerErrorHttpException($e->getMessage());
+        } catch (NotFoundHttpException $e) {
+            return new JsonResponse(['message' => $e->getMessage()], 404);
+        } catch (BadRequestHttpException $e) {
+            return new JsonResponse(['message' => $e->getMessage()], 400);
+        } catch (Exception $e) {
+            return new JsonResponse(['message' => $e->getMessage()], 500);
         }
     }
 

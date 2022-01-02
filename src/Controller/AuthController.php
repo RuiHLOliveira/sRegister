@@ -2,16 +2,21 @@
 
 namespace App\Controller;
 
+use DateTime;
+use Exception;
 use App\Entity\User;
+use Firebase\JWT\JWT;
 use App\Entity\UserAccess;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use App\Entity\InvitationToken;
+use App\Repository\UserRepository;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
-use App\Repository\UserRepository;
-use DateTime;
-use Firebase\JWT\JWT;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
+use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
+use Symfony\Component\VarDumper\VarDumper;
 
 class AuthController extends AbstractController
 {
@@ -24,18 +29,61 @@ class AuthController extends AbstractController
      */
     public function register(Request $request, UserPasswordEncoderInterface $encoder)
     {
-        $requestData = json_decode($request->getContent());
-        $password = $requestData->password;
-        $email = $requestData->email;
-        $user = new User();
-        $user->setPassword($encoder->encodePassword($user, $password));
-        $user->setEmail($email);
-        $em = $this->getDoctrine()->getManager();
-        $em->persist($user);
-        $em->flush();
-        return $this->json([
-            'user' => $user->getEmail()
-        ]);
+        try {
+            $requestData = json_decode($request->getContent());
+            $password = $requestData->password;
+            $email = $requestData->email;
+            $invitationToken = $requestData->invitation_token;
+            
+            if($invitationToken == ''){
+                throw new BadRequestHttpException("Invitation Token was not sent.");
+            }
+            
+            $invitationTokenArray = explode('_',$invitationToken);
+            if(!isset($invitationTokenArray[0]) || !isset($invitationTokenArray[1])){
+                throw new BadRequestHttpException("Invitation Token has an invalid format.");
+            }
+            $tokenId = $invitationTokenArray[0];
+            $tokenNumber = $invitationTokenArray[1];
+            
+            $invitationToken = $this->getDoctrine()->getRepository(InvitationToken::class)
+            ->findOneBy([
+                'id' => $tokenId,
+                'invitation_token' => $tokenNumber,
+                'active' => true
+            ]);
+
+            if($invitationToken == null){
+                throw new NotFoundHttpException("Invitation Token not found or already used.");
+            }
+            
+            $invitationTokenEmail = $invitationToken->getEmail();
+            if($invitationTokenEmail !== null && $invitationTokenEmail !== $email){
+                throw new NotFoundHttpException("This email can't use this Invitation Token.");
+            }
+
+            $em = $this->getDoctrine()->getManager();
+
+            $user = new User();
+            $user->setPassword($encoder->encodePassword($user, $password));
+            $user->setEmail($email);
+
+            $em->persist($user);
+            $em->flush();
+
+            $invitationToken->setActive(false);
+            $em->persist($invitationToken);
+            $em->flush();
+
+            return new JsonResponse(['message' => 'User registered']);
+
+        } catch ( BadRequestHttpException $e) {
+            return new JsonResponse(['message' => $e->getMessage()], 400);
+        } catch ( NotFoundHttpException $e) {
+            return new JsonResponse(['message' => $e->getMessage()], 404);
+        } catch ( Exception $e) {
+            return new JsonResponse(['message' => $e->getMessage()], 500);
+        }
     }
 
     /**
